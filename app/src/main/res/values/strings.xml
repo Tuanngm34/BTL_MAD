@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">BTL-MAD</string>
+    <string name="password">Mật khẩu</string>
+    <string name="email">Tên đăng nhập</string>
+    <string name="header">TimeSheet</string>
+    <string name="login">Đăng nhập</string>
+    <string name="sign_up">Bạn chưa có tài khoản? Đăng kí ngay!</string>
+    <string name="sign_in">Bạn đã có tài khoản? Đăng nhập!</string>
+    <string name="hint">A-z, 0-9, không kí tự đặc biệt</string>
+    <string name="register">Đăng kí</string>
+    <string name="confirm_password">Nhập lại mật khẩu</string>
+</resources>
