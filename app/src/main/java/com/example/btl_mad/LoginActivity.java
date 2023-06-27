@@ -14,6 +14,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText editTextEmail;
     private EditText editTextPassword;
     private Button btnLogin;
+    private MyDatabaseHelper databaseHelper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,14 +32,18 @@ public class LoginActivity extends AppCompatActivity {
         editTextPassword = findViewById(R.id.editTextPassword);
         btnLogin = findViewById(R.id.btnLogin);
 
+        databaseHelper = new MyDatabaseHelper(this);
+
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String username = editTextEmail.getText().toString();
                 String password = editTextPassword.getText().toString();
 
+                boolean loginSuccessfull = databaseHelper.checkLogin(username, password);
+
                 // Kiểm tra tài khoản và mật khẩu
-                if (checkCredentials(username, password)) {
+                if (loginSuccessfull) {
                     // Chuyển sang giao diện activity_main
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     startActivity(intent);
@@ -50,15 +55,5 @@ public class LoginActivity extends AppCompatActivity {
 
             }
         });
-    }
-
-    // Hàm kiểm tra tài khoản và mật khẩu
-    private boolean checkCredentials(String username, String password) {
-        // Kiểm tra username và password với cơ sở dữ liệu
-        // Ở đây chỉ là ví dụ, bạn cần thay thế phần này bằng code xử lý cụ thể với cơ sở dữ liệu của bạn
-        String savedUsername = "admin";
-        String savedPassword = "12345";
-
-        return username.equals(savedUsername) && password.equals(savedPassword);
     }
 }

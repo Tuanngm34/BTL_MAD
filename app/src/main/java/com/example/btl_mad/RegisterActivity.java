@@ -16,7 +16,7 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText editTextPassword;
     private EditText confirmTextPassword;
     private Button btnSignup;
-
+    private MyDatabaseHelper databaseHelper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +36,8 @@ public class RegisterActivity extends AppCompatActivity {
         confirmTextPassword = findViewById(R.id.confirmTextPassword);
         btnSignup = findViewById(R.id.btnSignup);
 
+        databaseHelper = new MyDatabaseHelper(this);
+
         btnSignup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -43,20 +45,17 @@ public class RegisterActivity extends AppCompatActivity {
                 String newPassword = editTextPassword.getText().toString();
                 String confirmPassword = confirmTextPassword.getText().toString();
 
-                    // Kiểm tra tài khoản đã tồn tại hay chưa
-                if (checkExistingUsername(newUsername)) {
-                    // Hiển thị thông báo khi tài khoản đã tồn tại
-                    Toast.makeText(RegisterActivity.this, "Tài khoản đã tồn tại!", Toast.LENGTH_SHORT).show();
+                boolean signupSuccessfull = databaseHelper.registerAccount(newUsername, newPassword);
+                if (newUsername.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+                    // Kiểm tra xem các trường đã được nhập hay chưa
+                    Toast.makeText(RegisterActivity.this, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
                 } else if (!newPassword.equals(confirmPassword)) {
                     // Hiển thị thông báo khi mật khẩu không khớp
                     Toast.makeText(RegisterActivity.this, "Mật khẩu không khớp!", Toast.LENGTH_SHORT).show();
-                } else if (newUsername.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
-                    // Kiểm tra xem các trường đã được nhập hay chưa
-                    Toast.makeText(RegisterActivity.this, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
-                } else {
-                    // Thêm tài khoản mới vào cơ sở dữ liệu
-                    addNewUserToDatabase(newUsername, newPassword);
-
+                } else if (signupSuccessfull == false) {
+                    // Hiển thị thông báo khi tài khoản được tạo thành công
+                    Toast.makeText(RegisterActivity.this, "Tài khoản đã tồn tại!", Toast.LENGTH_SHORT).show();
+                } else if (signupSuccessfull) {
                     // Hiển thị thông báo khi tài khoản được tạo thành công
                     Toast.makeText(RegisterActivity.this, "Đã tạo tài khoản thành công!", Toast.LENGTH_SHORT).show();
 
@@ -65,25 +64,10 @@ public class RegisterActivity extends AppCompatActivity {
                     startActivity(intent);
                     finish();
                 }
+
+
             }
         });
 
-    }
-
-    // Hàm kiểm tra tài khoản đã tồn tại hay chưa
-    private boolean checkExistingUsername(String username) {
-        // Kiểm tra username trong cơ sở dữ liệu
-        // Ở đây chỉ là ví dụ, bạn cần thay thế phần này bằng code xử lý cụ thể với cơ sở dữ liệu của bạn
-        String savedUsername = "admin";
-
-        return username.equals(savedUsername);
-    }
-
-    // Hàm thêm tài khoản mới vào cơ sở dữ liệu
-    private void addNewUserToDatabase(String username, String password) {
-        // Thêm username và password vào cơ sở dữ liệu
-        // Ở đây chỉ là ví dụ, bạn cần thay thế phần này bằng code xử lý cụ thể với cơ sở dữ liệu của bạn
-        // Ví dụ:
-        // database.insertUser(username, password);
     }
 }

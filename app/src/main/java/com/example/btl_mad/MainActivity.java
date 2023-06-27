@@ -1,71 +1,43 @@
 package com.example.btl_mad;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.view.View;
-import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
+import com.example.btl_mad.databinding.ActivityMainBinding;
+
 public class MainActivity extends AppCompatActivity {
-    private EditText editTextTime, editTextDate;
-    private Handler handler;
-    private Runnable runnable;
+
+    ActivityMainBinding binding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        replaceFragment(new HomeFragment());
 
-        editTextTime = findViewById(R.id.editTextTime);
-        editTextTime.setEnabled(false); // Vô hiệu hóa EditText
+        binding.bottomNavigationView.setOnItemSelectedListener(item -> {
 
-        editTextDate = findViewById(R.id.editTextDate);
-        editTextDate.setEnabled(false);
-
-        // Lấy thời gian hiện tại
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat time = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-        SimpleDateFormat date = new SimpleDateFormat( "'Ngày' dd 'tháng' MM 'năm' yyyy", Locale.getDefault());
-        String currentTime = time.format(calendar.getTime());
-        String currentDate = date.format(calendar.getTime());
-
-
-        // Đặt thời gian và ngày vào EditText
-        editTextTime.setText(currentTime);
-        editTextDate.setText(currentDate);
-
-        // Cập nhật thời gian thực
-        handler = new Handler();
-        runnable = new Runnable() {
-            @Override
-            public void run() {
-                // Lấy thời gian hiện tại
-                Calendar calendar = Calendar.getInstance();
-                String currentTime = time.format(calendar.getTime());
-
-                // Cập nhật thời gian vào EditText
-                editTextTime.setText(currentTime);
-
-                // Lặp lại sau mỗi 1 giây
-                handler.postDelayed(this, 1000);
+            if (item.getItemId() == R.id.home) {
+                replaceFragment(new HomeFragment());
+            } else if (item.getItemId() == R.id.checklist) {
+                replaceFragment(new ChecklistFragment());
+            } else if (item.getItemId() == R.id.settings) {
+                replaceFragment(new SettingsFragment());
             }
-        };
+
+            return true;
+        });
+
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Bắt đầu cập nhật thời gian thực khi hoạt động resume
-        handler.postDelayed(runnable, 0);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        // Dừng cập nhật thời gian thực khi hoạt động pause
-        handler.removeCallbacks(runnable);
+    private void replaceFragment(Fragment fragment){
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.frame_layout,fragment);
+        fragmentTransaction.commit();
     }
 }
