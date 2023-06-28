@@ -7,6 +7,10 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -14,6 +18,8 @@ import android.view.ViewGroup;
  * create an instance of this fragment.
  */
 public class ChecklistFragment extends Fragment {
+    private ListView listView;
+    private ArrayAdapter<String> adapter;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -56,9 +62,28 @@ public class ChecklistFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_checklist, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_checklist, container, false);
+
+        listView = view.findViewById(R.id.listView);
+        adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1);
+
+        // Gán adapter cho ListView
+        listView.setAdapter(adapter);
+
+        // Gọi phương thức để lấy dữ liệu từ cơ sở dữ liệu và hiển thị lên ListView
+        loadDataFromDatabase();
+
+        return view;
+    }
+
+    private void loadDataFromDatabase() {
+        MyDatabaseHelper dbHelper = new MyDatabaseHelper(requireContext());
+        List<String> worktimeDataList = dbHelper.getAllWorktimeData();
+
+        // Cập nhật dữ liệu trong adapter
+        adapter.clear();
+        adapter.addAll(worktimeDataList);
+        adapter.notifyDataSetChanged();
     }
 }

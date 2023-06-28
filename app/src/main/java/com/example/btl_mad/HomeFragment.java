@@ -3,7 +3,6 @@ package com.example.btl_mad;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -18,29 +17,25 @@ import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 
 public class HomeFragment extends Fragment {
-    private TextView editTextTime, editTextDate;
-    private Button checkInButton;
+    private TextView editTextTime;
     private Handler handler;
     private Runnable runnable;
 
+    private  Button checkInButton;
     public HomeFragment() {
         // Required empty public constructor
     }
 
-    public static HomeFragment newInstance() {
-        return new HomeFragment();
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         editTextTime = view.findViewById(R.id.editTextTime);
-        editTextDate = view.findViewById(R.id.editTextDate);
+        TextView editTextDate = view.findViewById(R.id.editTextDate);
         checkInButton = view.findViewById(R.id.checkInButton);
 
         // Lấy thời gian hiện tại
@@ -78,9 +73,8 @@ public class HomeFragment extends Fragment {
         checkInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                // Thực hiện công việc khi nút "check in" được nhấn
-                performCheckIn();
+                String username = "admin";
+                performCheckIn(username);
             }
         });
 
@@ -93,39 +87,54 @@ public class HomeFragment extends Fragment {
         // Dừng cập nhật thời gian thực khi Fragment bị hủy
         handler.removeCallbacks(runnable);
     }
-
-    private void performCheckIn() {
+    private boolean isCheckedIn = false; // Biến kiểm tra đã check-in hay chưa
+    private void performCheckIn(String account) {
         MyDatabaseHelper dbHelper = new MyDatabaseHelper(getContext());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         String currentDate = getCurrentDate();
         String currentTime = getCurrentTime();
 
         // Kiểm tra xem đã có dữ liệu cho ngày hiện tại hay chưa
-        String query = "SELECT * FROM Thoigianlamviec WHERE Ngaylam = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{currentDate});
+        String query = "SELECT * FROM worktime WHERE Ngaylam = ? AND account = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{currentDate, account});
         if (cursor.getCount() > 0) {
-            // Đã có dữ liệu cho ngày hiện tại, cập nhật cột "Thoigianlam2"
-            ContentValues values = new ContentValues();
-            values.put("Thoigianlam2", currentTime);
-            db.update("Thoigianlamviec", values, "Ngaylam = ?", new String[]{currentDate});
+            // Đã có dữ liệu cho ngày hiện tại và tài khoản hiện tại
+            if (isCheckedIn) {
+                // Ngày hiện tại đã được check-in, không thực hiện cập nhật và hiển thị thông báo
+                Toast.makeText(getContext(), "Bạn đã hoàn thành chấm công hôm nay rồi!", Toast.LENGTH_SHORT).show();
+            } else {
+                // Ngày hiện tại chưa được check-in, cập nhật cột "Thoigianlam2" và đặt isCheckedIn thành true
+                ContentValues values = new ContentValues();
+                values.put("Thoigianlam2", currentTime);
+                db.update("worktime", values, "Ngaylam = ? AND account = ?", new String[]{currentDate, account});
+                isCheckedIn = true;
+                Toast.makeText(getContext(), "Check in thành công!", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            // Chưa có dữ liệu cho ngày hiện tại, chèn dữ liệu mới
+            // Chưa có dữ liệu cho ngày hiện tại và tài khoản hiện tại, chèn dữ liệu mới
             ContentValues values = new ContentValues();
             values.put("Ngaylam", currentDate);
+            values.put("account", account);
             values.put("Thoigianlam1", currentTime);
-            db.insert("Thoigianlamviec", null, values);
+            db.insert("worktime", null, values);
+            isCheckedIn = true; // Đặt isCheckedIn thành true khi thực hiện check-in lần đầu tiên
+            Toast.makeText(getContext(), "Check in thành công!", Toast.LENGTH_SHORT).show();
         }
 
         cursor.close();
         db.close();
 
-        Toast.makeText(getContext(), "Check in thành công!", Toast.LENGTH_SHORT).show();
+        // Vô hiệu hóa button check-in nếu đã check-in cho ngày hiện tại
+        if (isCheckedIn) {
+            checkInButton.setEnabled(false);
+            Toast.makeText(getContext(), "Bạn đã hoàn thành chấm công ngày hôm nay rồi!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private String getCurrentDate() {
         // Lấy ngày hiện tại
         Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd", Locale.getDefault());
         return dateFormat.format(calendar.getTime());
     }
 
